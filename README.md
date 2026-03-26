@@ -88,4 +88,4 @@ This project uses a pre-trained LLM via API and does not involve training custom
 
 ## 👨‍💻 Author
 
-* Your Name
+* Hempreet Singh
