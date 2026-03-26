@@ -24,6 +24,24 @@ The focus is on:
 * **Google Gemini API (LLM)**
 * **Postman (Testing)**
 
+## 🔐 AI Configuration
+
+Spring AI's Google GenAI starter needs one of these configurations before it can create a client:
+
+* Gemini Developer API: `spring.ai.google.genai.api-key`
+* Vertex AI: `spring.ai.google.genai.project-id` and `spring.ai.google.genai.location`
+
+This repository currently keeps Spring AI disabled by default in
+`src/main/resources/application.properties`:
+
+```properties
+spring.ai.model.chat=none
+spring.ai.model.embedding.text=none
+```
+
+When you are ready to wire the real Gemini integration, change those model selectors to
+`google-genai` and provide credentials through environment variables or application properties.
+
 ---
 
 ## 🔄 How It Works

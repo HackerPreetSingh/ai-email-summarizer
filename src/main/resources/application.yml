@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: EmailSummarizer
+  ai:
+    google:
+      genai:
+        api-key: [YOUR_API_KEY]
+        chat:
+          options:
+            model: gemini-2.5-flash
+
+ai:
+  prompts:
+    summary: |
+      You are a Email Summarizer. Summarize it in 3-4 pointers as below. Example:
+                      1. Point 1
+                      2. Point 2
+
+                      Do not add acknowledgment or explanation or any extra text.
+
+                      Email body:
+                      %s
+    reply: |
+      You are a Email Replier. Draft a proper email reply for this email body.
+
+                      Do not add acknowledgment or explanation or any extra text like - Email reply and all. Just your response.
+
+                      Email body:
+                      %s
