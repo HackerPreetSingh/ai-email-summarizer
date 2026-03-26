@@ -1,109 +1,246 @@
-# 🚀 AI Email Summarizer
+# 🚀 AI Email Assistant (Spring Boot + Gmail + Gemini)
 
-A Spring Boot-based REST API that uses a Large Language Model (LLM) to summarize email content into concise, structured bullet points.
+A production-style backend system that integrates **Gmail API + Generative AI (LLM)** to intelligently process emails.
+
+It supports:
+- 📌 Email Summarization
+- ✉️ Reply Generation
+- 📬 Gmail Email Fetching
+- 🤖 AI-based Processing of Selected Emails
 
 ---
 
 ## 🧠 Overview
 
-This project demonstrates how to integrate Generative AI into a backend system. It processes raw email text, sends it to an LLM (Gemini API), and returns a clean, structured summary.
+This project demonstrates how to build a real-world AI-powered backend system.
 
-The focus is on:
+It combines:
+- Gmail API (OAuth2-based email access)
+- Large Language Models (Gemini)
+- Prompt engineering
+- Clean backend architecture
 
-* LLM API integration
-* Prompt engineering
-* Backend architecture
-* Real-world AI use case
+Unlike simple AI demos, this system:
+- Fetches real emails from Gmail
+- Extracts full email body using MIME traversal
+- Processes selected emails using AI
+- Returns structured responses
 
 ---
 
 ## ⚙️ Tech Stack
 
-* **Java (Spring Boot)**
-* **REST APIs**
-* **Google Gemini API (LLM)**
-* **Postman (Testing)**
+- **Java (Spring Boot)**
+- **Spring AI (Gemini Integration)**
+- **Google Gmail API**
+- **OAuth2 Authentication**
+- **Spring Cache**
+- **REST APIs**
+- **Lombok**
 
-## 🔐 AI Configuration
+---
 
-Spring AI's Google GenAI starter needs one of these configurations before it can create a client:
+## 🔐 Configuration
 
-* Gemini Developer API: `spring.ai.google.genai.api-key`
-* Vertex AI: `spring.ai.google.genai.project-id` and `spring.ai.google.genai.location`
+### AI Configuration
 
-This repository currently keeps Spring AI disabled by default in
-`src/main/resources/application.properties`:
-
-```properties
-spring.ai.model.chat=none
-spring.ai.model.embedding.text=none
+```yaml
+spring:
+  ai:
+    google:
+      genai:
+        api-key: YOUR_API_KEY
+        chat:
+          options:
+            model: gemini-2.5-flash
 ```
 
-When you are ready to wire the real Gemini integration, change those model selectors to
-`google-genai` and provide credentials through environment variables or application properties.
+### Prompt Configuration (Externalized)
+
+```yaml
+ai:
+  prompts:
+    summary: |
+      You are a Email Summarizer. Summarize it in 3-4 pointers.
+
+      Do not add any extra text.
+
+      Email body:
+      %s
+
+    reply: |
+      You are a Email Replier. Draft a proper email reply.
+
+      Do not add any extra explanation.
+
+      Email body:
+      %s
+```
+---
+
+### Gmail OAuth Setup
+
+1.	Enable Gmail API in Google Cloud Console 
+2. Create OAuth Client (Desktop App)
+3.	Download credentials
+4.	Place file in: src/main/resources/credentials.json
 
 ---
 
 ## 🔄 How It Works
 
-1. User sends email content via API
-2. Backend constructs a structured prompt
-3. Request sent to Gemini API
-4. LLM generates summary
-5. Backend parses and returns clean response
+Flow:
+1.	User authenticates with Gmail (OAuth2)
+2.	Backend fetches email metadata
+3.	User selects an email (via ID)
+4.	System extracts full email body from MIME structure
+5.	Prompt is dynamically loaded from config
+6.	AI processes the request
+7.	Structured response is returned
 
 ---
 
-## 📌 API Endpoint
+## 📬 API Endpoints
 
-### POST `/api/summarize`
+### 🔹 Authenticate Gmail (one-time)
 
-#### Request:
+```code
+GET /api/gmail/test
+```
+
+### 🔹 Fetch Emails
+
+```code
+GET /api/gmail/list
+```
+    
+#### Response
+
+```json
+[
+  {
+    "id": "18c...",
+    "snippet": "Hi team, please send..."
+  }
+]
+```
+---
+
+### 🔹 Process Email (Summary / Reply)
+
+```code
+POST /api/gmail/userRequest
+```
+
+#### Request 1
 
 ```json
 {
-  "emailText": "Hi team, please complete the report by Friday..."
+  "id": "emailId",
+  "type": "summary"
 }
 ```
 
-#### Response:
+#### Response 1
 
 ```json
 {
   "summary": [
-    "Report deadline is Friday",
-    "Team coordination required",
-    "Pending approvals needed"
-  ]
+    "Point 1",
+    "Point 2"
+  ],
+  "emailResponse": null
 }
 ```
+
+#### Request 2
+
+```json
+{
+  "id": "emailId",
+  "type": "reply"
+}
+```
+
+#### Response 2
+
+```json
+{
+  "summary": null,
+  "emailResponse": "Generated reply..."
+}
+```
+---
+
+## 🧩 Email Parsing Logic
+
+Gmail returns emails as **MIME multipart structures (tree format)**.
+
+This project:
+•	Traverses the entire structure (BFS)
+•	Extracts the first text/plain content
+•	Falls back to text/html if needed
+
+This ensures accurate extraction even for complex emails with:
+•	attachments
+•	inline images
+•	nested structures
+
+---
+
+## ⚡ Performance Optimizations
+
+*	✅ Caching (AI responses + prompts)
+*	✅ Externalized prompts (no redeploy needed)
+*	✅ Timeout handling for AI calls
+*	✅ Input control to reduce token usage
 
 ---
 
 ## 🧪 Features
 
-* Email summarization using LLM
-* Structured bullet-point output
-* Prompt customization
-* Error handling and validation
+* AI-powered email summarization 
+* AI based reply generation 
+* Gmail integration with OAuth2
+* MIME-based email parsing
+* Clean layered architecture
+* Exception handling & logging
 
 ---
 
 ## 🚀 Future Enhancements
 
-* Gmail API integration (auto-fetch emails)
-* Reply generation feature
+* Token persistence for OAuth (avoid repeated auth)
+* HTML → clean text conversion
+* Pagination for Gmail API
+* Async processing
+* UI integration
 * RAG-based email search
-* Database storage for summaries
 
 ---
 
-## ⚠️ Note
+## ⚠️ Notes
 
-This project uses a pre-trained LLM via API and does not involve training custom models.
+* Uses LLM via API (no custom training)
+* Free tier APIs may have usage limits
+* OAuth required for Gmail access
 
 ---
 
 ## 👨‍💻 Author
 
-* Hempreet Singh
+**Hempreet Singh**
+
+---
+
+## ⭐ Final Thought
+
+This project goes beyond a simple AI demo and demonstrates:
+
+* Real-world API integration
+* AI system design
+* Backend architecture
+* Performance optimization
+
+---
+
